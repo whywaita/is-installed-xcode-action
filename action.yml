@@ -1,0 +1,24 @@
+name: 'The name of your action here'
+description: 'Provide a description here'
+author: 'Your name or organization here'
+
+# Metadata for market place
+branding:
+  icon: "activity"
+  color: "blue"
+
+# Define your inputs here.
+inputs:
+  message:
+    description: 'Your input description here'
+    required: true
+    default: 'test message'
+
+# Define your outputs here.
+outputs:
+  message:
+    description: 'Your output description here'
+runs:
+  using: node20
+  main: dist/main.js
+  post: dist/post.js
