@@ -3,7 +3,6 @@ import {
   error,
   getInput,
   info,
-  platform,
   setFailed,
   warning,
 } from "npm:@actions/core@1.10.1";
@@ -15,11 +14,8 @@ import { getInstalledXcodeVersions, getSymbolicXcodeVersion } from "./os.ts";
 import type { XcodeRelease } from "npm:xcodereleases-deno-sdk@0.1.9";
 
 const main = async () => {
-  const {
-    name,
-    version,
-  } = await platform.getDetails();
-  if (name !== "darwin") {
+  const platform: string = Deno.build.os;
+  if (platform !== "darwin") {
     error("This action is only supported on macOS");
     return;
   }
@@ -27,6 +23,7 @@ const main = async () => {
   const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
   debug(`success-on-miss: ${isSuccessOnMiss}`);
 
+  const version: string = Deno.osRelease();
   const githubHostedInstalledVersion: XcodeRelease[] =
     await GetXcodeVersionsInGitHubHosted(
       version,

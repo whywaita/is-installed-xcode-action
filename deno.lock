@@ -2,10 +2,6 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.4": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.4",
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.5": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.5",
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.6": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.6",
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.7": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.7",
       "npm:@actions/core@1.10.1": "npm:@actions/core@1.10.1",
       "npm:xcodereleases-deno-sdk@0.1.9": "npm:xcodereleases-deno-sdk@0.1.9"
     },
@@ -40,6 +36,10 @@
       },
       "@fastify/busboy@2.0.0": {
         "integrity": "sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==",
+        "dependencies": {}
+      },
+      "os@0.1.2": {
+        "integrity": "sha512-ZoXJkvAnljwvc56MbvhtKVWmSkzV712k42Is2mA0+0KTSRakq5XXuXpjZjgAt9ctzl51ojhQWakQQpmOvXWfjQ==",
         "dependencies": {}
       },
       "tunnel@0.0.6": {
