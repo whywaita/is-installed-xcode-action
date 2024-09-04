@@ -1,24 +1,17 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'whywaita/is-installed-xcode-action'
+description: 'Checks to see if the same Xcode version as GitHub-hosted is installed'
+author: 'whywaita'
 
-# Metadata for market place
 branding:
-  icon: "activity"
-  color: "blue"
+  icon: "user-check"
+  color: "white"
 
-# Define your inputs here.
 inputs:
-  message:
-    description: 'Your input description here'
-    required: true
-    default: 'test message'
+  success-on-miss:
+    description: 'If the Xcode version is not installed, the action will be successful'
+    required: false
+    default: false
 
-# Define your outputs here.
-outputs:
-  message:
-    description: 'Your output description here'
 runs:
   using: node20
   main: dist/main.js
-  post: dist/post.js
