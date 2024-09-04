@@ -40,4 +40,4 @@ jobs:
       - name: Run self
         uses: ./
         with:
-          message: foobar
+          success-on-miss: true
