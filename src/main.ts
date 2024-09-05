@@ -16,14 +16,14 @@ import type { XcodeRelease } from "npm:xcodereleases-deno-sdk@0.1.9";
 const main = async () => {
   const platform: string = Deno.build.os;
   if (platform !== "darwin") {
-    error("This action is only supported on macOS");
-    return;
+    throw new Error("This action is only supported on macOS");
   }
 
   const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
   debug(`success-on-miss: ${isSuccessOnMiss}`);
 
   const version: string = Deno.osRelease();
+  debug(`macOS version: ${version}`);
   const githubHostedInstalledVersion: XcodeRelease[] =
     await GetXcodeVersionsInGitHubHosted(
       version,
@@ -68,12 +68,11 @@ const main = async () => {
       }`,
     );
     warning(`Diff: ${diff.join(", ")}`);
-    if (isSuccessOnMiss) {
-      info("Success on miss is enabled, so this action is success");
-      return;
-    }
-    setFailed("Installed Xcode is not required version");
-    return;
+    throw new Error(
+      "Installed Xcode is not required version. installed: " +
+        installed.join(", ") + " required: " +
+        githubHostedInstalledVersion.map((v) => v.version.number).join(", "),
+    );
   }
 
   debug("Installed Xcode is newest version and required version");
@@ -118,5 +117,11 @@ async function getDiffInstalledVersion(
 }
 
 main().catch((e) => {
+  const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
+  if (isSuccessOnMiss) {
+    info("Success on miss is enabled, so this action is success");
+    return;
+  }
+  setFailed(e.message);
   error(e);
 });

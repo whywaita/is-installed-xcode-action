@@ -24315,12 +24315,12 @@ async function getSymbolicXcodeVersion() {
 var main = async () => {
   const platform = import_shim_deno2.Deno.build.os;
   if (platform !== "darwin") {
-    (0, import_core.error)("This action is only supported on macOS");
-    return;
+    throw new Error("This action is only supported on macOS");
   }
   const isSuccessOnMiss = (0, import_core.getInput)("success-on-miss") === "true";
   (0, import_core.debug)(`success-on-miss: ${isSuccessOnMiss}`);
   const version2 = import_shim_deno2.Deno.osRelease();
+  (0, import_core.debug)(`macOS version: ${version2}`);
   const githubHostedInstalledVersion = await GetXcodeVersionsInGitHubHosted(
     version2
   );
@@ -24356,12 +24356,9 @@ var main = async () => {
       `Required Xcode: ${githubHostedInstalledVersion.map((v) => v.version.number).join(", ")}`
     );
     (0, import_core.warning)(`Diff: ${diff.join(", ")}`);
-    if (isSuccessOnMiss) {
-      (0, import_core.info)("Success on miss is enabled, so this action is success");
-      return;
-    }
-    (0, import_core.setFailed)("Installed Xcode is not required version");
-    return;
+    throw new Error(
+      "Installed Xcode is not required version. installed: " + installed.join(", ") + " required: " + githubHostedInstalledVersion.map((v) => v.version.number).join(", ")
+    );
   }
   (0, import_core.debug)("Installed Xcode is newest version and required version");
   return;
@@ -24389,6 +24386,12 @@ async function getDiffInstalledVersion(githubHostedInstalledVersion) {
   return diff;
 }
 main().catch((e) => {
+  const isSuccessOnMiss = (0, import_core.getInput)("success-on-miss") === "true";
+  if (isSuccessOnMiss) {
+    (0, import_core.info)("Success on miss is enabled, so this action is success");
+    return;
+  }
+  (0, import_core.setFailed)(e.message);
   (0, import_core.error)(e);
 });
 /*! Bundled license information:
