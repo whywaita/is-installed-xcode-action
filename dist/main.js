@@ -24310,6 +24310,16 @@ async function getSymbolicXcodeVersion() {
   const realPath = await import_shim_deno2.Deno.realPath("/Applications/Xcode.app");
   return getXcodeVersionFromPath(realPath);
 }
+async function getMacOSVersion() {
+  const cmd = new import_shim_deno2.Deno.Command("sw_vers", {
+    args: ["-productVersion"]
+  });
+  const { code, stdout, stderr } = await cmd.output();
+  if (code !== 0) {
+    throw new Error(`Failed to get macOS version: ${stderr}`);
+  }
+  return new TextDecoder().decode(stdout).trim();
+}
 
 // npm/src/main.ts
 var main = async () => {
@@ -24319,7 +24329,7 @@ var main = async () => {
   }
   const isSuccessOnMiss = (0, import_core.getInput)("success-on-miss") === "true";
   (0, import_core.debug)(`success-on-miss: ${isSuccessOnMiss}`);
-  const version2 = import_shim_deno2.Deno.osRelease();
+  const version2 = await getMacOSVersion();
   (0, import_core.debug)(`macOS version: ${version2}`);
   const githubHostedInstalledVersion = await GetXcodeVersionsInGitHubHosted(
     version2

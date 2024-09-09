@@ -10,7 +10,11 @@ import {
   getXcodeNewestRelease,
   GetXcodeVersionsInGitHubHosted,
 } from "./xcodereleases.ts";
-import { getInstalledXcodeVersions, getSymbolicXcodeVersion } from "./os.ts";
+import {
+  getInstalledXcodeVersions,
+  getMacOSVersion,
+  getSymbolicXcodeVersion,
+} from "./os.ts";
 import type { XcodeRelease } from "npm:xcodereleases-deno-sdk@0.1.9";
 
 const main = async () => {
@@ -22,7 +26,7 @@ const main = async () => {
   const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
   debug(`success-on-miss: ${isSuccessOnMiss}`);
 
-  const version: string = Deno.osRelease();
+  const version: string = await getMacOSVersion();
   debug(`macOS version: ${version}`);
   const githubHostedInstalledVersion: XcodeRelease[] =
     await GetXcodeVersionsInGitHubHosted(

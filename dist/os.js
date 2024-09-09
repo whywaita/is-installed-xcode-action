@@ -5131,6 +5131,7 @@ var require_dist2 = __commonJS({
 var os_exports = {};
 __export(os_exports, {
   getInstalledXcodeVersions: () => getInstalledXcodeVersions,
+  getMacOSVersion: () => getMacOSVersion,
   getSymbolicXcodeVersion: () => getSymbolicXcodeVersion
 });
 module.exports = __toCommonJS(os_exports);
@@ -5218,8 +5219,19 @@ async function getSymbolicXcodeVersion() {
   const realPath = await import_shim_deno2.Deno.realPath("/Applications/Xcode.app");
   return getXcodeVersionFromPath(realPath);
 }
+async function getMacOSVersion() {
+  const cmd = new import_shim_deno2.Deno.Command("sw_vers", {
+    args: ["-productVersion"]
+  });
+  const { code, stdout, stderr } = await cmd.output();
+  if (code !== 0) {
+    throw new Error(`Failed to get macOS version: ${stderr}`);
+  }
+  return new TextDecoder().decode(stdout).trim();
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   getInstalledXcodeVersions,
+  getMacOSVersion,
   getSymbolicXcodeVersion
 });
