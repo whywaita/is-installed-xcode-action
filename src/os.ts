@@ -1,3 +1,6 @@
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+
 export async function getInstalledXcodeVersions(): Promise<
   string[] | undefined
 > {
@@ -31,15 +34,18 @@ export async function getSymbolicXcodeVersion(): Promise<string> {
   return getXcodeVersionFromPath(realPath);
 }
 
+const execAsync = promisify(exec);
+
 // Get MacOS version
 export async function getMacOSVersion(): Promise<string> {
   // execute sw_vers -productVersion
-  const cmd = new Deno.Command("sw_vers", {
-    args: ["-productVersion"],
-  });
-  const { code, stdout, stderr } = await cmd.output();
-  if (code !== 0) {
-    throw new Error(`Failed to get macOS version: ${stderr}`);
+  try {
+    const { stdout, stderr } = await execAsync("sw_vers -productVersion");
+    if (stderr) {
+      throw new Error(`Failed to get macOS version: ${stderr}`);
+    }
+    return stdout.trim();
+  } catch (error) {
+    throw new Error(`Failed to get macOS version: ${error}`);
   }
-  return new TextDecoder().decode(stdout).trim();
 }

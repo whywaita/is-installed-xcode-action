@@ -5198,6 +5198,8 @@ function createMergeProxy(baseObj, extObj) {
 }
 
 // npm/src/os.ts
+var import_child_process = require("child_process");
+var import_util = require("util");
 async function getInstalledXcodeVersions() {
   const installed = [];
   for await (const entry of import_shim_deno2.Deno.readDir("/Applications")) {
@@ -5219,15 +5221,17 @@ async function getSymbolicXcodeVersion() {
   const realPath = await import_shim_deno2.Deno.realPath("/Applications/Xcode.app");
   return getXcodeVersionFromPath(realPath);
 }
+var execAsync = (0, import_util.promisify)(import_child_process.exec);
 async function getMacOSVersion() {
-  const cmd = new import_shim_deno2.Deno.Command("sw_vers", {
-    args: ["-productVersion"]
-  });
-  const { code, stdout, stderr } = await cmd.output();
-  if (code !== 0) {
-    throw new Error(`Failed to get macOS version: ${stderr}`);
+  try {
+    const { stdout, stderr } = await execAsync("sw_vers -productVersion");
+    if (stderr) {
+      throw new Error(`Failed to get macOS version: ${stderr}`);
+    }
+    return stdout.trim();
+  } catch (error) {
+    throw new Error(`Failed to get macOS version: ${error}`);
   }
-  return new TextDecoder().decode(stdout).trim();
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

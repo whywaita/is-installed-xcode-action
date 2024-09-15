@@ -3,6 +3,7 @@
   "packages": {
     "specifiers": {
       "npm:@actions/core@1.10.1": "npm:@actions/core@1.10.1",
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:xcodereleases-deno-sdk@0.1.9": "npm:xcodereleases-deno-sdk@0.1.9"
     },
     "jsr": {
@@ -36,6 +37,10 @@
       },
       "@fastify/busboy@2.0.0": {
         "integrity": "sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==",
+        "dependencies": {}
+      },
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
         "dependencies": {}
       },
       "os@0.1.2": {

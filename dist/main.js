@@ -16181,7 +16181,7 @@ var require_mock_interceptor = __commonJS({
 var require_mock_client = __commonJS({
   "npm/node_modules/undici/lib/mock/mock-client.js"(exports, module2) {
     "use strict";
-    var { promisify } = require("util");
+    var { promisify: promisify2 } = require("util");
     var Client = require_client();
     var { buildMockDispatch } = require_mock_utils();
     var {
@@ -16221,7 +16221,7 @@ var require_mock_client = __commonJS({
         return new MockInterceptor(opts, this[kDispatches]);
       }
       async [kClose]() {
-        await promisify(this[kOriginalClose])();
+        await promisify2(this[kOriginalClose])();
         this[kConnected] = 0;
         this[kMockAgent][Symbols.kClients].delete(this[kOrigin]);
       }
@@ -16234,7 +16234,7 @@ var require_mock_client = __commonJS({
 var require_mock_pool = __commonJS({
   "npm/node_modules/undici/lib/mock/mock-pool.js"(exports, module2) {
     "use strict";
-    var { promisify } = require("util");
+    var { promisify: promisify2 } = require("util");
     var Pool = require_pool();
     var { buildMockDispatch } = require_mock_utils();
     var {
@@ -16274,7 +16274,7 @@ var require_mock_pool = __commonJS({
         return new MockInterceptor(opts, this[kDispatches]);
       }
       async [kClose]() {
-        await promisify(this[kOriginalClose])();
+        await promisify2(this[kOriginalClose])();
         this[kConnected] = 0;
         this[kMockAgent][Symbols.kClients].delete(this[kOrigin]);
       }
@@ -24289,6 +24289,8 @@ function getXcodeNewestRelease(xr) {
 }
 
 // npm/src/os.ts
+var import_child_process = require("child_process");
+var import_util = require("util");
 async function getInstalledXcodeVersions() {
   const installed = [];
   for await (const entry of import_shim_deno2.Deno.readDir("/Applications")) {
@@ -24310,15 +24312,17 @@ async function getSymbolicXcodeVersion() {
   const realPath = await import_shim_deno2.Deno.realPath("/Applications/Xcode.app");
   return getXcodeVersionFromPath(realPath);
 }
+var execAsync = (0, import_util.promisify)(import_child_process.exec);
 async function getMacOSVersion() {
-  const cmd = new import_shim_deno2.Deno.Command("sw_vers", {
-    args: ["-productVersion"]
-  });
-  const { code, stdout, stderr } = await cmd.output();
-  if (code !== 0) {
-    throw new Error(`Failed to get macOS version: ${stderr}`);
+  try {
+    const { stdout, stderr } = await execAsync("sw_vers -productVersion");
+    if (stderr) {
+      throw new Error(`Failed to get macOS version: ${stderr}`);
+    }
+    return stdout.trim();
+  } catch (error2) {
+    throw new Error(`Failed to get macOS version: ${error2}`);
   }
-  return new TextDecoder().decode(stdout).trim();
 }
 
 // npm/src/main.ts
