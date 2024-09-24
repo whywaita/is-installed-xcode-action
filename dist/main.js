@@ -25560,9 +25560,11 @@ var main = async () => {
     xr,
     version2
   );
+  (0, import_core.debug)(`GitHub hosted installed version: ${githubHostedInstalledVersion}`);
   const newestVersion = getXcodeNewestRelease(
     githubHostedInstalledVersion
   );
+  (0, import_core.debug)(`Newest version: ${newestVersion}`);
   const isInstalledNewestVersion = await isApplicationXcodeIsNewestVersion(
     newestVersion
   );

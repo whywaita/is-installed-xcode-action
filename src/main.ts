@@ -35,12 +35,14 @@ const main = async () => {
       xr,
       version,
     );
+  debug(`GitHub hosted installed version: ${githubHostedInstalledVersion}`);
 
   // 1. Check installed Xcode is newest version
   // And "/Applications/Xcode.app" is symbolic link to newest version
   const newestVersion: XcodeRelease = getXcodeNewestRelease(
     githubHostedInstalledVersion,
   );
+  debug(`Newest version: ${newestVersion}`);
   const isInstalledNewestVersion: boolean =
     await isApplicationXcodeIsNewestVersion(
       newestVersion,
