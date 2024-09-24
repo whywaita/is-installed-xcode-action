@@ -6,5 +6,8 @@ export function getXcodeNewestRelease(xr: XcodeRelease[]): XcodeRelease {
     xr,
     "release",
   );
+  if (releasesVersions.length === 0) {
+    throw new Error("No Xcode releases found.");
+  }
   return releasesVersions[0];
 }

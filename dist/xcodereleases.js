@@ -47,6 +47,9 @@ function getXcodeNewestRelease(xr) {
     xr,
     "release"
   );
+  if (releasesVersions.length === 0) {
+    throw new Error("No Xcode releases found.");
+  }
   return releasesVersions[0];
 }
 // Annotate the CommonJS export names for ESM import in node:

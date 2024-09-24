@@ -19,13 +19,15 @@ import {
   type XcodeRelease,
 } from "npm:xcodereleases-deno-sdk@0.2.1";
 
+const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
+
 const main = async () => {
   const platform: string = Deno.build.os;
   if (platform !== "darwin") {
-    throw new Error("This action is only supported on macOS");
+    setFailed("This action is only supported on macOS");
+    return;
   }
 
-  const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
   debug(`success-on-miss: ${isSuccessOnMiss}`);
 
   const version: string = await getMacOSVersion();
@@ -81,9 +83,11 @@ const main = async () => {
     );
     warning(`Diff: ${diff.join(", ")}`);
     throw new Error(
-      "Installed Xcode is not required version. installed: " +
-        installed.join(", ") + " required: " +
-        githubHostedInstalledVersion.map((v) => v.version.number).join(", "),
+      `Installed Xcode is not the required version. Installed: ${
+        installed.join(", ")
+      }, Required: ${
+        githubHostedInstalledVersion.map((v) => v.version.number).join(", ")
+      }`,
     );
   }
 
@@ -130,7 +134,6 @@ async function getDiffInstalledVersion(
 }
 
 main().catch((e) => {
-  const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
   if (isSuccessOnMiss) {
     info("Success on miss is enabled, so this action is success");
     return;
