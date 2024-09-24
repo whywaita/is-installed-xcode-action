@@ -1,3 +1,4 @@
+import { basename, toFileUrl } from "https://deno.land/std@0.182.0/path/mod.ts";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
@@ -32,8 +33,8 @@ export async function getSymbolicXcodeVersion(): Promise<string> {
     );
   }
 
-  const realPath = await Deno.realPath("/Applications/Xcode.app");
-  return getXcodeVersionFromPath(realPath);
+  const p = await Deno.realPath("/Applications/Xcode.app");
+  return getXcodeVersionFromPath(basename(p));
 }
 
 const execAsync = promisify(exec);
