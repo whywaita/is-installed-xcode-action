@@ -24301,10 +24301,11 @@ function getXcodeVersionFromPath(absPath) {
   return absPath.replace("Xcode_", "").replace(".app", "");
 }
 async function getSymbolicXcodeVersion() {
-  const file = await import_shim_deno2.Deno.open("/Applications/Xcode.app", { read: true });
-  const fileInfo = await file.stat();
+  const fileInfo = await import_shim_deno2.Deno.lstat("/Applications/Xcode.app");
   if (fileInfo.isSymlink === false) {
-    throw new Error("Xcode.app is not symbolic link");
+    throw new Error(
+      "/Applications/Xcode.app is not symbolic link, fileinfo: " + JSON.stringify(fileInfo)
+    );
   }
   const realPath = await import_shim_deno2.Deno.realPath("/Applications/Xcode.app");
   return getXcodeVersionFromPath(realPath);

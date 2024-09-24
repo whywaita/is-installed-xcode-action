@@ -23,11 +23,13 @@ function getXcodeVersionFromPath(absPath: string): string {
 
 // Get symbolic link Xcode, where is /Applications/Xcode.app
 export async function getSymbolicXcodeVersion(): Promise<string> {
-  const file = await Deno.open("/Applications/Xcode.app", { read: true });
-  const fileInfo = await file.stat();
+  const fileInfo = await Deno.lstat("/Applications/Xcode.app");
 
   if (fileInfo.isSymlink === false) {
-    throw new Error("Xcode.app is not symbolic link");
+    throw new Error(
+      "/Applications/Xcode.app is not symbolic link, fileinfo: " +
+        JSON.stringify(fileInfo),
+    );
   }
 
   const realPath = await Deno.realPath("/Applications/Xcode.app");
