@@ -2287,8 +2287,8 @@ var require_inspect = __commonJS({
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.inspect = void 0;
     var util = __importStar(require("util"));
-    var inspect = (value, options = {}) => util.inspect(value, options);
-    exports.inspect = inspect;
+    var inspect2 = (value, options = {}) => util.inspect(value, options);
+    exports.inspect = inspect2;
   }
 });
 
@@ -24196,6 +24196,7 @@ function createMergeProxy(baseObj, extObj) {
 
 // npm/src/main.ts
 var import_core = __toESM(require_core());
+var import_util4 = require("util");
 
 // npm/node_modules/xcodereleases-deno-sdk/esm/gha.js
 function GetXcodeVersionsInGitHubHosted(xr, macOSVersion) {
@@ -25560,7 +25561,9 @@ var main = async () => {
     xr,
     version2
   );
-  (0, import_core.debug)(`GitHub hosted installed version: ${githubHostedInstalledVersion}`);
+  (0, import_core.debug)(
+    `GitHub hosted installed version: ${(0, import_util4.inspect)(githubHostedInstalledVersion)}`
+  );
   const newestVersion = getXcodeNewestRelease(
     githubHostedInstalledVersion
   );

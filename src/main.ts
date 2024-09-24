@@ -6,6 +6,7 @@ import {
   setFailed,
   warning,
 } from "npm:@actions/core@1.10.1";
+import { inspect } from "node:util";
 import { getXcodeNewestRelease } from "./xcodereleases.ts";
 import {
   getInstalledXcodeVersions,
@@ -35,7 +36,9 @@ const main = async () => {
       xr,
       version,
     );
-  debug(`GitHub hosted installed version: ${githubHostedInstalledVersion}`);
+  debug(
+    `GitHub hosted installed version: ${inspect(githubHostedInstalledVersion)}`,
+  );
 
   // 1. Check installed Xcode is newest version
   // And "/Applications/Xcode.app" is symbolic link to newest version
