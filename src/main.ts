@@ -92,7 +92,8 @@ async function isApplicationXcodeIsNewestVersion(
   const symbolicVersion: string = await getSymbolicXcodeVersion();
 
   debug(`Symbolic link version: ${symbolicVersion}`);
-  debug(`Required newest version: ${requiredNewestVersion.version}`);
+  debug(`Required newest: ${requiredNewestVersion}`);
+  debug(`Required newest version: ${requiredNewestVersion.version.number}`);
 
   return symbolicVersion === requiredNewestVersion.version.number;
 }

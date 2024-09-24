@@ -25602,7 +25602,8 @@ var main = async () => {
 async function isApplicationXcodeIsNewestVersion(requiredNewestVersion) {
   const symbolicVersion = await getSymbolicXcodeVersion();
   (0, import_core.debug)(`Symbolic link version: ${symbolicVersion}`);
-  (0, import_core.debug)(`Required newest version: ${requiredNewestVersion.version}`);
+  (0, import_core.debug)(`Required newest: ${requiredNewestVersion}`);
+  (0, import_core.debug)(`Required newest version: ${requiredNewestVersion.version.number}`);
   return symbolicVersion === requiredNewestVersion.version.number;
 }
 async function getDiffInstalledVersion(githubHostedInstalledVersion) {

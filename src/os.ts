@@ -1,4 +1,4 @@
-import { basename, toFileUrl } from "https://deno.land/std@0.182.0/path/mod.ts";
+import { basename } from "https://deno.land/std@0.182.0/path/mod.ts";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
