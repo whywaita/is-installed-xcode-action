@@ -24197,6 +24197,33 @@ function createMergeProxy(baseObj, extObj) {
 // npm/src/main.ts
 var import_core = __toESM(require_core());
 
+// npm/node_modules/xcodereleases-deno-sdk/esm/gha.js
+function GetXcodeVersionsInGitHubHosted(xr, macOSVersion) {
+  let result = [];
+  const releasesVersions = GetXcodeReleasesByRelease(xr, "release");
+  const compatibleReleaseVersions = GetXcodeReleasesCompatibleVersion(releasesVersions, macOSVersion);
+  const releasesByVersion = DivideXcodeReleasesByVersion(compatibleReleaseVersions);
+  for (const [_, releases] of releasesByVersion) {
+    const minorVersion = releases.filter((release) => !IsPatchVersion(release));
+    result = result.concat(minorVersion);
+    const patchReleases = releases.filter((release) => IsPatchVersion(release) && !IsDeprecatedVersionInGHA(release));
+    result = result.concat(patchReleases);
+  }
+  const betaVersions = GetXcodeReleasesByRelease(xr, "beta");
+  result = result.concat(betaVersions[betaVersions.length - 1]);
+  result.sort((a, b) => b._versionOrder - a._versionOrder);
+  result = result.filter((value, index, self) => {
+    return self.indexOf(value) === index;
+  });
+  return result;
+}
+function IsDeprecatedVersionInGHA(release) {
+  const date = /* @__PURE__ */ new Date();
+  date.setMonth(date.getMonth() - 3);
+  const releaseDate = new Date(release.date.year, release.date.month - 1, release.date.day);
+  return releaseDate < date;
+}
+
 // npm/node_modules/xcodereleases-deno-sdk/esm/mod.js
 var APIEndpoint = "https://xcodereleases.com/data.json";
 async function GetXcodeReleases() {
@@ -24204,12 +24231,8 @@ async function GetXcodeReleases() {
 }
 async function GetXcodeReleasesWithURL(url) {
   const response = await fetch(url);
-  const data = await response.json();
-  const releases = parseXcodeReleases(data);
+  const releases = await response.json();
   return releases.sort((a, b) => a._versionOrder - b._versionOrder);
-}
-function parseXcodeReleases(data) {
-  return JSON.parse(data);
 }
 function GetXcodeReleasesByRelease(releases, releaseType) {
   switch (releaseType) {
@@ -24227,12 +24250,6 @@ function GetXcodeReleasesByRelease(releases, releaseType) {
       return releases.filter((release) => release.version.release.dp !== void 0);
   }
 }
-function GetXcodeReleasesSinceDate(releases, date) {
-  return releases.filter((release) => {
-    const releaseDate = new Date(release.date.year, release.date.month - 1, release.date.day);
-    return releaseDate >= date;
-  });
-}
 function GetXcodeReleasesCompatibleVersion(releases, macOSVersion) {
   const [major, minor] = macOSVersion.split(".");
   const majorVersion = parseInt(major);
@@ -24241,45 +24258,25 @@ function GetXcodeReleasesCompatibleVersion(releases, macOSVersion) {
     const [requiredMajor, requiredMinor] = release.requires.split(".");
     const requiredMajorVersion = parseInt(requiredMajor);
     const requiredMinorVersion = parseInt(requiredMinor);
-    return majorVersion > requiredMajorVersion || majorVersion === requiredMajorVersion && minorVersion >= requiredMinorVersion;
+    return majorVersion < requiredMajorVersion || majorVersion === requiredMajorVersion && minorVersion <= requiredMinorVersion;
   });
+}
+function DivideXcodeReleasesByVersion(releases) {
+  const map = /* @__PURE__ */ new Map();
+  releases.forEach((release) => {
+    const minorVersion = release.version.number.split(".")[1];
+    if (!map.has(minorVersion)) {
+      map.set(minorVersion, []);
+    }
+    map.get(minorVersion)?.push(release);
+  });
+  return map;
+}
+function IsPatchVersion(release) {
+  return release.version.number.split(".").length > 2;
 }
 
 // npm/src/xcodereleases.ts
-async function GetXcodeVersionsInGitHubHosted(version2) {
-  const xr = await GetXcodeReleases();
-  return getXcodeVersionsInGitHubHosted(xr, version2);
-}
-function getXcodeVersionsInGitHubHosted(xr, macOSVersion) {
-  let result = [];
-  const releasesVersions = GetXcodeReleasesByRelease(
-    xr,
-    "release"
-  );
-  const compatibleVersions = GetXcodeReleasesCompatibleVersion(
-    releasesVersions,
-    macOSVersion
-  );
-  result = result.concat(compatibleVersions);
-  const betaVersions = GetXcodeReleasesByRelease(xr, "beta");
-  result = result.concat(betaVersions[0]);
-  const gmVersions = GetXcodeReleasesByRelease(xr, "gm");
-  result = result.concat(gmVersions[0]);
-  const date = /* @__PURE__ */ new Date();
-  date.setMonth(date.getMonth() - 3);
-  const oldVersions = GetXcodeReleasesSinceDate(xr, date);
-  result = result.concat(oldVersions);
-  result.sort((a, b) => {
-    if (a._versionOrder > b._versionOrder) {
-      return -1;
-    }
-    if (a._versionOrder < b._versionOrder) {
-      return 1;
-    }
-    return 0;
-  });
-  return result;
-}
 function getXcodeNewestRelease(xr) {
   const releasesVersions = GetXcodeReleasesByRelease(
     xr,
@@ -24335,7 +24332,9 @@ var main = async () => {
   (0, import_core.debug)(`success-on-miss: ${isSuccessOnMiss}`);
   const version2 = await getMacOSVersion();
   (0, import_core.debug)(`macOS version: ${version2}`);
-  const githubHostedInstalledVersion = await GetXcodeVersionsInGitHubHosted(
+  const xr = await GetXcodeReleases();
+  const githubHostedInstalledVersion = GetXcodeVersionsInGitHubHosted(
+    xr,
     version2
   );
   const newestVersion = getXcodeNewestRelease(

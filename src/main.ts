@@ -6,16 +6,17 @@ import {
   setFailed,
   warning,
 } from "npm:@actions/core@1.10.1";
-import {
-  getXcodeNewestRelease,
-  GetXcodeVersionsInGitHubHosted,
-} from "./xcodereleases.ts";
+import { getXcodeNewestRelease } from "./xcodereleases.ts";
 import {
   getInstalledXcodeVersions,
   getMacOSVersion,
   getSymbolicXcodeVersion,
 } from "./os.ts";
-import type { XcodeRelease } from "npm:xcodereleases-deno-sdk@0.1.9";
+import {
+  GetXcodeReleases,
+  GetXcodeVersionsInGitHubHosted,
+  type XcodeRelease,
+} from "npm:xcodereleases-deno-sdk@0.2.1";
 
 const main = async () => {
   const platform: string = Deno.build.os;
@@ -28,8 +29,10 @@ const main = async () => {
 
   const version: string = await getMacOSVersion();
   debug(`macOS version: ${version}`);
+  const xr: XcodeRelease[] = await GetXcodeReleases();
   const githubHostedInstalledVersion: XcodeRelease[] =
-    await GetXcodeVersionsInGitHubHosted(
+    GetXcodeVersionsInGitHubHosted(
+      xr,
       version,
     );
 
