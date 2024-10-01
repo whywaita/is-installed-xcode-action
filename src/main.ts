@@ -7,6 +7,7 @@ import {
   warning,
 } from "npm:@actions/core@1.10.1";
 import { inspect } from "node:util";
+import process from "node:process";
 import {
   GetXcodeVersionsInGitHubHosted,
   XcodeVersionsInGitHubHosted,
@@ -26,7 +27,7 @@ const main = async () => {
     setFailed("This action is only supported on macOS");
     return;
   }
-  const rawArch: string = Deno.build.arch;
+  const rawArch: string = process.arch;
   const arch = ConvertArchitectures(rawArch);
 
   debug(`success-on-miss: ${isSuccessOnMiss}`);
@@ -69,7 +70,7 @@ const main = async () => {
     warning("Installed Xcode is not required version");
     const installed: string[] | undefined = await getInstalledXcodeVersions();
     if (installed === undefined) {
-      throw new Error("Installed Xcode is not found");
+      throw new Error("Cannot get installed Xcode versions");
     }
     warning(`Installed Xcode: ${installed.join(", ")}`);
     warning(
@@ -114,7 +115,7 @@ async function getDiffInstalledVersion(
 
   const installed: string[] | undefined = await getInstalledXcodeVersions();
   if (installed === undefined) {
-    throw new Error("Installed Xcode is not found");
+    throw new Error("Connot get installed Xcode versions");
   }
   installed.sort();
 
@@ -123,7 +124,9 @@ async function getDiffInstalledVersion(
   // Compare installed and required version
   const diff: string[] = requiredVersion.filter((v) => !installed.includes(v));
 
-  debug(`Diff: ${diff.join(", ")}`);
+  debug(
+    `requiredVersion.filter((v) => !installed.includes(v)): ${diff.join(", ")}`,
+  );
 
   return diff;
 }

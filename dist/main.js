@@ -3833,7 +3833,7 @@ var require_run = __commonJS({
       if (!which_1.default.sync(commandName, { nothrow: true })) {
         throw new errors.NotFound("The system cannot find the file specified.");
       }
-      const process2 = child_process_1.default.spawn(commandName, args, {
+      const process3 = child_process_1.default.spawn(commandName, args, {
         cwd: options.cwd,
         env: getEnv(options),
         uid: options.uid,
@@ -3845,7 +3845,7 @@ var require_run = __commonJS({
           getStdio(options.stderr, "out")
         ]
       });
-      return new Process(process2);
+      return new Process(process3);
     };
     exports.run = run;
     function getStdio(value, kind) {
@@ -3898,7 +3898,7 @@ var require_run = __commonJS({
     }
     var Process = class {
       /** @internal */
-      constructor(process2) {
+      constructor(process3) {
         var _a, _b, _c;
         _Process_process.set(this, void 0);
         _Process_stderr.set(this, void 0);
@@ -3906,11 +3906,11 @@ var require_run = __commonJS({
         _Process_stdin.set(this, void 0);
         _Process_status.set(this, void 0);
         _Process_receivedStatus.set(this, false);
-        __classPrivateFieldSet(this, _Process_process, process2, "f");
+        __classPrivateFieldSet(this, _Process_process, process3, "f");
         __classPrivateFieldSet(this, _Process_stdout, (_a = ProcessReadStream.fromNullable(__classPrivateFieldGet(this, _Process_process, "f").stdout)) !== null && _a !== void 0 ? _a : null, "f");
         __classPrivateFieldSet(this, _Process_stderr, (_b = ProcessReadStream.fromNullable(__classPrivateFieldGet(this, _Process_process, "f").stderr)) !== null && _b !== void 0 ? _b : null, "f");
         __classPrivateFieldSet(this, _Process_stdin, (_c = ProcessWriteStream.fromNullable(__classPrivateFieldGet(this, _Process_process, "f").stdin)) !== null && _c !== void 0 ? _c : null, "f");
-        __classPrivateFieldSet(this, _Process_status, (0, events_1.once)(process2, "exit"), "f");
+        __classPrivateFieldSet(this, _Process_status, (0, events_1.once)(process3, "exit"), "f");
       }
       get rid() {
         return NaN;
@@ -24197,6 +24197,7 @@ function createMergeProxy(baseObj, extObj) {
 // npm/src/main.ts
 var import_core = __toESM(require_core());
 var import_util4 = require("util");
+var import_process = __toESM(require("process"));
 
 // npm/src/xcode.ts
 async function GetXcodeVersionsInGitHubHosted(macOSVersion, architecture) {
@@ -25499,7 +25500,7 @@ var main = async () => {
     (0, import_core.setFailed)("This action is only supported on macOS");
     return;
   }
-  const rawArch = import_shim_deno2.Deno.build.arch;
+  const rawArch = import_process.default.arch;
   const arch = ConvertArchitectures(rawArch);
   (0, import_core.debug)(`success-on-miss: ${isSuccessOnMiss}`);
   const version2 = await getMacOSVersion();
@@ -25532,7 +25533,7 @@ var main = async () => {
     (0, import_core.warning)("Installed Xcode is not required version");
     const installed = await getInstalledXcodeVersions();
     if (installed === void 0) {
-      throw new Error("Installed Xcode is not found");
+      throw new Error("Cannot get installed Xcode versions");
     }
     (0, import_core.warning)(`Installed Xcode: ${installed.join(", ")}`);
     (0, import_core.warning)(
@@ -25560,12 +25561,14 @@ async function getDiffInstalledVersion(githubHostedInstalledVersion) {
   (0, import_core.debug)(`Required version: ${requiredVersion.join(", ")}`);
   const installed = await getInstalledXcodeVersions();
   if (installed === void 0) {
-    throw new Error("Installed Xcode is not found");
+    throw new Error("Connot get installed Xcode versions");
   }
   installed.sort();
   (0, import_core.debug)(`Installed version: ${installed.join(", ")}`);
   const diff = requiredVersion.filter((v) => !installed.includes(v));
-  (0, import_core.debug)(`Diff: ${diff.join(", ")}`);
+  (0, import_core.debug)(
+    `requiredVersion.filter((v) => !installed.includes(v)): ${diff.join(", ")}`
+  );
   return diff;
 }
 main().catch((e) => {
