@@ -2,12 +2,10 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.4": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.4",
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.5": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.5",
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.6": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.6",
-      "jsr:@whywaita/xcodereleases-deno-sdk@0.1.7": "jsr:@whywaita/xcodereleases-deno-sdk@0.1.7",
       "npm:@actions/core@1.10.1": "npm:@actions/core@1.10.1",
-      "npm:xcodereleases-deno-sdk@0.1.9": "npm:xcodereleases-deno-sdk@0.1.9"
+      "npm:@types/node": "npm:@types/node@18.16.19",
+      "npm:xcodereleases-deno-sdk@0.1.9": "npm:xcodereleases-deno-sdk@0.1.9",
+      "npm:xcodereleases-deno-sdk@0.2.1": "npm:xcodereleases-deno-sdk@0.2.1"
     },
     "jsr": {
       "@whywaita/xcodereleases-deno-sdk@0.1.4": {
@@ -42,6 +40,14 @@
         "integrity": "sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==",
         "dependencies": {}
       },
+      "@types/node@18.16.19": {
+        "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
+        "dependencies": {}
+      },
+      "os@0.1.2": {
+        "integrity": "sha512-ZoXJkvAnljwvc56MbvhtKVWmSkzV712k42Is2mA0+0KTSRakq5XXuXpjZjgAt9ctzl51ojhQWakQQpmOvXWfjQ==",
+        "dependencies": {}
+      },
       "tunnel@0.0.6": {
         "integrity": "sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==",
         "dependencies": {}
@@ -58,6 +64,10 @@
       },
       "xcodereleases-deno-sdk@0.1.9": {
         "integrity": "sha512-Z6YZXHXdH9qkan5J8ndurvJu0jTKg+DFz8hM4uGlgPmcgdYW+cU5/NiHe5X37OfouWkUEWXZJfHVS+5ktKjM0g==",
+        "dependencies": {}
+      },
+      "xcodereleases-deno-sdk@0.2.1": {
+        "integrity": "sha512-M9opN7yNOvLqygSNberp8qM44CsukLpWnRGyO6J9A6oYOGqQVh3jts+r0SnQTEyx5CWbC1uzMh2AruJjTziaFg==",
         "dependencies": {}
       }
     }
@@ -439,8 +449,8 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@whywaita/xcodereleases-deno-sdk@^0.1.9",
-      "npm:@actions/core@^1.10.1"
+      "npm:@actions/core@^1.10.1",
+      "npm:xcodereleases-deno-sdk@^0.2.1"
     ]
   }
 }

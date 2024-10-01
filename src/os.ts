@@ -1,3 +1,7 @@
+import { basename } from "https://deno.land/std@0.182.0/path/mod.ts";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+
 export async function getInstalledXcodeVersions(): Promise<
   string[] | undefined
 > {
@@ -20,13 +24,31 @@ function getXcodeVersionFromPath(absPath: string): string {
 
 // Get symbolic link Xcode, where is /Applications/Xcode.app
 export async function getSymbolicXcodeVersion(): Promise<string> {
-  const file = await Deno.open("/Applications/Xcode.app", { read: true });
-  const fileInfo = await file.stat();
+  const fileInfo = await Deno.lstat("/Applications/Xcode.app");
 
   if (fileInfo.isSymlink === false) {
-    throw new Error("Xcode.app is not symbolic link");
+    throw new Error(
+      "/Applications/Xcode.app is not symbolic link, fileinfo: " +
+        JSON.stringify(fileInfo),
+    );
   }
 
-  const realPath = await Deno.realPath("/Applications/Xcode.app");
-  return getXcodeVersionFromPath(realPath);
+  const p = await Deno.realPath("/Applications/Xcode.app");
+  return getXcodeVersionFromPath(basename(p));
+}
+
+const execAsync = promisify(exec);
+
+// Get MacOS version
+export async function getMacOSVersion(): Promise<string> {
+  // execute sw_vers -productVersion
+  try {
+    const { stdout, stderr } = await execAsync("sw_vers -productVersion");
+    if (stderr) {
+      throw new Error(`Failed to get macOS version: ${stderr}`);
+    }
+    return stdout.trim();
+  } catch (error) {
+    throw new Error(`Failed to get macOS version: ${error}`);
+  }
 }

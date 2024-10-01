@@ -31,7 +31,7 @@ jobs:
             exit 1
           fi
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-deno-with-cache
@@ -40,4 +40,4 @@ jobs:
       - name: Run self
         uses: ./
         with:
-          success-on-miss: true
+          success-on-miss: false
