@@ -3,23 +3,7 @@
   "packages": {
     "specifiers": {
       "npm:@actions/core@1.10.1": "npm:@actions/core@1.10.1",
-      "npm:@types/node": "npm:@types/node@18.16.19",
-      "npm:xcodereleases-deno-sdk@0.1.9": "npm:xcodereleases-deno-sdk@0.1.9",
-      "npm:xcodereleases-deno-sdk@0.2.1": "npm:xcodereleases-deno-sdk@0.2.1"
-    },
-    "jsr": {
-      "@whywaita/xcodereleases-deno-sdk@0.1.4": {
-        "integrity": "1cbfe62698b775f0d1394bcce6ee60a810eade7c8c26733122630add62dcf8cf"
-      },
-      "@whywaita/xcodereleases-deno-sdk@0.1.5": {
-        "integrity": "36f0f392354c06dfaf21e3bca2bb6b0b4a41eb565b6d0095fccb7cb062ad45ed"
-      },
-      "@whywaita/xcodereleases-deno-sdk@0.1.6": {
-        "integrity": "1d62e057a6ba19f2eb4f7e761d445d589bef2b7171d7b569ca92e96c6e981862"
-      },
-      "@whywaita/xcodereleases-deno-sdk@0.1.7": {
-        "integrity": "65f3e1a1c471b211a7ec7024f82909ebdd84ba3babd388c2774e114ba7caa718"
-      }
+      "npm:@types/node": "npm:@types/node@18.16.19"
     },
     "npm": {
       "@actions/core@1.10.1": {
@@ -60,14 +44,6 @@
       },
       "uuid@8.3.2": {
         "integrity": "sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==",
-        "dependencies": {}
-      },
-      "xcodereleases-deno-sdk@0.1.9": {
-        "integrity": "sha512-Z6YZXHXdH9qkan5J8ndurvJu0jTKg+DFz8hM4uGlgPmcgdYW+cU5/NiHe5X37OfouWkUEWXZJfHVS+5ktKjM0g==",
-        "dependencies": {}
-      },
-      "xcodereleases-deno-sdk@0.2.1": {
-        "integrity": "sha512-M9opN7yNOvLqygSNberp8qM44CsukLpWnRGyO6J9A6oYOGqQVh3jts+r0SnQTEyx5CWbC1uzMh2AruJjTziaFg==",
         "dependencies": {}
       }
     }
@@ -449,8 +425,7 @@
   },
   "workspace": {
     "dependencies": [
-      "npm:@actions/core@^1.10.1",
-      "npm:xcodereleases-deno-sdk@^0.2.1"
+      "npm:@actions/core@^1.10.1"
     ]
   }
 }

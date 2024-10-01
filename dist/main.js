@@ -3833,7 +3833,7 @@ var require_run = __commonJS({
       if (!which_1.default.sync(commandName, { nothrow: true })) {
         throw new errors.NotFound("The system cannot find the file specified.");
       }
-      const process2 = child_process_1.default.spawn(commandName, args, {
+      const process3 = child_process_1.default.spawn(commandName, args, {
         cwd: options.cwd,
         env: getEnv(options),
         uid: options.uid,
@@ -3845,7 +3845,7 @@ var require_run = __commonJS({
           getStdio(options.stderr, "out")
         ]
       });
-      return new Process(process2);
+      return new Process(process3);
     };
     exports.run = run;
     function getStdio(value, kind) {
@@ -3898,7 +3898,7 @@ var require_run = __commonJS({
     }
     var Process = class {
       /** @internal */
-      constructor(process2) {
+      constructor(process3) {
         var _a, _b, _c;
         _Process_process.set(this, void 0);
         _Process_stderr.set(this, void 0);
@@ -3906,11 +3906,11 @@ var require_run = __commonJS({
         _Process_stdin.set(this, void 0);
         _Process_status.set(this, void 0);
         _Process_receivedStatus.set(this, false);
-        __classPrivateFieldSet(this, _Process_process, process2, "f");
+        __classPrivateFieldSet(this, _Process_process, process3, "f");
         __classPrivateFieldSet(this, _Process_stdout, (_a = ProcessReadStream.fromNullable(__classPrivateFieldGet(this, _Process_process, "f").stdout)) !== null && _a !== void 0 ? _a : null, "f");
         __classPrivateFieldSet(this, _Process_stderr, (_b = ProcessReadStream.fromNullable(__classPrivateFieldGet(this, _Process_process, "f").stderr)) !== null && _b !== void 0 ? _b : null, "f");
         __classPrivateFieldSet(this, _Process_stdin, (_c = ProcessWriteStream.fromNullable(__classPrivateFieldGet(this, _Process_process, "f").stdin)) !== null && _c !== void 0 ? _c : null, "f");
-        __classPrivateFieldSet(this, _Process_status, (0, events_1.once)(process2, "exit"), "f");
+        __classPrivateFieldSet(this, _Process_status, (0, events_1.once)(process3, "exit"), "f");
       }
       get rid() {
         return NaN;
@@ -24197,96 +24197,35 @@ function createMergeProxy(baseObj, extObj) {
 // npm/src/main.ts
 var import_core = __toESM(require_core());
 var import_util4 = require("util");
+var import_process = __toESM(require("process"));
 
-// npm/node_modules/xcodereleases-deno-sdk/esm/gha.js
-function GetXcodeVersionsInGitHubHosted(xr, macOSVersion) {
-  let result = [];
-  const releasesVersions = GetXcodeReleasesByRelease(xr, "release");
-  const compatibleReleaseVersions = GetXcodeReleasesCompatibleVersion(releasesVersions, macOSVersion);
-  const releasesByVersion = DivideXcodeReleasesByVersion(compatibleReleaseVersions);
-  for (const [_, releases] of releasesByVersion) {
-    const minorVersion = releases.filter((release) => !IsPatchVersion(release));
-    result = result.concat(minorVersion);
-    const patchReleases = releases.filter((release) => IsPatchVersion(release) && !IsDeprecatedVersionInGHA(release));
-    result = result.concat(patchReleases);
-  }
-  const betaVersions = GetXcodeReleasesByRelease(xr, "beta");
-  result = result.concat(betaVersions[betaVersions.length - 1]);
-  result.sort((a, b) => b._versionOrder - a._versionOrder);
-  result = result.filter((value, index, self) => {
-    return self.indexOf(value) === index;
-  });
-  return result;
-}
-function IsDeprecatedVersionInGHA(release) {
-  const date = /* @__PURE__ */ new Date();
-  date.setMonth(date.getMonth() - 3);
-  const releaseDate = new Date(release.date.year, release.date.month - 1, release.date.day);
-  return releaseDate < date;
-}
-
-// npm/node_modules/xcodereleases-deno-sdk/esm/mod.js
-var APIEndpoint = "https://xcodereleases.com/data.json";
-async function GetXcodeReleases() {
-  return await GetXcodeReleasesWithURL(APIEndpoint);
-}
-async function GetXcodeReleasesWithURL(url) {
-  const response = await fetch(url);
-  const releases = await response.json();
-  return releases.sort((a, b) => a._versionOrder - b._versionOrder);
-}
-function GetXcodeReleasesByRelease(releases, releaseType) {
-  switch (releaseType) {
-    case "release":
-      return releases.filter((release) => release.version.release.release);
-    case "beta":
-      return releases.filter((release) => release.version.release.beta !== void 0);
-    case "rc":
-      return releases.filter((release) => release.version.release.rc !== void 0);
-    case "gm":
-      return releases.filter((release) => release.version.release.gm);
-    case "gmSeed":
-      return releases.filter((release) => release.version.release.gmSeed !== void 0);
-    case "dp":
-      return releases.filter((release) => release.version.release.dp !== void 0);
-  }
-}
-function GetXcodeReleasesCompatibleVersion(releases, macOSVersion) {
-  const [major, minor] = macOSVersion.split(".");
-  const majorVersion = parseInt(major);
-  const minorVersion = parseInt(minor);
-  return releases.filter((release) => {
-    const [requiredMajor, requiredMinor] = release.requires.split(".");
-    const requiredMajorVersion = parseInt(requiredMajor);
-    const requiredMinorVersion = parseInt(requiredMinor);
-    return majorVersion < requiredMajorVersion || majorVersion === requiredMajorVersion && minorVersion <= requiredMinorVersion;
-  });
-}
-function DivideXcodeReleasesByVersion(releases) {
-  const map = /* @__PURE__ */ new Map();
-  releases.forEach((release) => {
-    const minorVersion = release.version.number.split(".")[1];
-    if (!map.has(minorVersion)) {
-      map.set(minorVersion, []);
+// npm/src/xcode.ts
+async function GetXcodeVersionsInGitHubHosted(macOSVersion, architecture) {
+  const majorVersion = getMacOSMajorVersion(macOSVersion);
+  let toolset;
+  try {
+    const response = await fetch(
+      `https://raw.githubusercontent.com/actions/runner-images/main/images/macos/toolsets/toolset-${majorVersion}.json`
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch toolset JSON: ${response.status} ${response.statusText}`
+      );
     }
-    map.get(minorVersion)?.push(release);
-  });
-  return map;
-}
-function IsPatchVersion(release) {
-  return release.version.number.split(".").length > 2;
-}
-
-// npm/src/xcodereleases.ts
-function getXcodeNewestRelease(xr) {
-  const releasesVersions = GetXcodeReleasesByRelease(
-    xr,
-    "release"
-  );
-  if (releasesVersions.length === 0) {
-    throw new Error("No Xcode releases found.");
+    toolset = await response.json();
+  } catch (error2) {
+    throw new Error(`Failed to fetch toolset JSON: ${error2}`);
   }
-  return releasesVersions[0];
+  const defaultVersion = toolset.xcode.default;
+  const archData = toolset.xcode[architecture];
+  if (!archData) {
+    throw new Error(`No data available for architecture: ${architecture}`);
+  }
+  const versions = archData.versions;
+  return { defaultVersion, versions };
+}
+function getMacOSMajorVersion(macOSVersion) {
+  return macOSVersion.split(".")[0];
 }
 
 // npm/src/deps/deno.land/std@0.182.0/_util/os.ts
@@ -25548,6 +25487,24 @@ async function getMacOSVersion() {
     throw new Error(`Failed to get macOS version: ${error2}`);
   }
 }
+function ConvertArchitectures(architecture) {
+  switch (architecture) {
+    case "x86_64": {
+      return "x64";
+    }
+    case "x64": {
+      return "x64";
+    }
+    case "aarch64": {
+      return "arm64";
+    }
+    case "arm64": {
+      return "arm64";
+    }
+    default:
+      throw new Error(`Invalid architecture: ${architecture}`);
+  }
+}
 
 // npm/src/main.ts
 var isSuccessOnMiss = (0, import_core.getInput)("success-on-miss") === "true";
@@ -25557,34 +25514,30 @@ var main = async () => {
     (0, import_core.setFailed)("This action is only supported on macOS");
     return;
   }
+  const rawArch = import_process.default.arch;
+  const arch = ConvertArchitectures(rawArch);
   (0, import_core.debug)(`success-on-miss: ${isSuccessOnMiss}`);
   const version2 = await getMacOSVersion();
   (0, import_core.debug)(`macOS version: ${version2}`);
-  const xr = await GetXcodeReleases();
-  const githubHostedInstalledVersion = GetXcodeVersionsInGitHubHosted(
-    xr,
-    version2
-  );
+  (0, import_core.debug)(`architecture: ${arch}`);
+  const githubHostedInstalledVersion = await GetXcodeVersionsInGitHubHosted(version2, arch);
   (0, import_core.debug)(
     `GitHub hosted installed version: ${(0, import_util4.inspect)(githubHostedInstalledVersion)}`
   );
-  const newestVersion = getXcodeNewestRelease(
-    githubHostedInstalledVersion
+  (0, import_core.debug)(`Default version: ${githubHostedInstalledVersion.defaultVersion}`);
+  const isInstalledDefaultVersion = await isApplicationXcodeIsDefaultVersion(
+    githubHostedInstalledVersion.defaultVersion
   );
-  (0, import_core.debug)(`Newest version: ${newestVersion}`);
-  const isInstalledNewestVersion = await isApplicationXcodeIsNewestVersion(
-    newestVersion
-  );
-  if (isInstalledNewestVersion === false) {
+  if (isInstalledDefaultVersion === false) {
     const symbolicVersion = await getSymbolicXcodeVersion();
-    (0, import_core.warning)("Installed Xcode is not newest version");
+    (0, import_core.warning)("Installed Xcode is not the default version");
     (0, import_core.warning)(`Installed Xcode: ${symbolicVersion}`);
-    (0, import_core.warning)(`Newest Xcode: ${newestVersion.version.number}`);
+    (0, import_core.warning)(`Default Xcode: ${githubHostedInstalledVersion.defaultVersion}`);
     if (isSuccessOnMiss) {
       (0, import_core.info)("Success on miss is enabled, so this action is success");
       return;
     }
-    (0, import_core.setFailed)("Installed Xcode is not newest version");
+    (0, import_core.setFailed)("Installed Xcode is not the default version");
     return;
   }
   const diff = await getDiffInstalledVersion(
@@ -25594,41 +25547,47 @@ var main = async () => {
     (0, import_core.warning)("Installed Xcode is not required version");
     const installed = await getInstalledXcodeVersions();
     if (installed === void 0) {
-      throw new Error("Installed Xcode is not found");
+      throw new Error("Cannot get installed Xcode versions");
     }
     (0, import_core.warning)(`Installed Xcode: ${installed.join(", ")}`);
     (0, import_core.warning)(
-      `Required Xcode: ${githubHostedInstalledVersion.map((v) => v.version.number).join(", ")}`
+      `Required Xcode: ${githubHostedInstalledVersion.versions.map((v) => v.link).join(", ")}`
     );
     (0, import_core.warning)(`Diff: ${diff.join(", ")}`);
     throw new Error(
-      `Installed Xcode is not the required version. Installed: ${installed.join(", ")}, Required: ${githubHostedInstalledVersion.map((v) => v.version.number).join(", ")}`
+      `Installed Xcode is not the required version. Installed: ${installed.join(", ")}, Required: ${githubHostedInstalledVersion.versions.map((v) => v.link).join(", ")}`
     );
   }
   (0, import_core.debug)("Installed Xcode is newest version and required version");
   return;
 };
-async function isApplicationXcodeIsNewestVersion(requiredNewestVersion) {
+async function isApplicationXcodeIsDefaultVersion(requiredDefaultVersion) {
   const symbolicVersion = await getSymbolicXcodeVersion();
-  (0, import_core.debug)(`Symbolic link version: ${symbolicVersion}`);
-  (0, import_core.debug)(`Required newest: ${requiredNewestVersion}`);
-  (0, import_core.debug)(`Required newest version: ${requiredNewestVersion.version.number}`);
-  return symbolicVersion === requiredNewestVersion.version.number;
+  const normalizedSymbolicVersion = symbolicVersion.trim();
+  const normalizedRequiredVersion = requiredDefaultVersion.trim();
+  (0, import_core.debug)(`Symbolic link version: ${normalizedSymbolicVersion}`);
+  (0, import_core.debug)(`Required default version: ${normalizedRequiredVersion}`);
+  return normalizedSymbolicVersion === normalizedRequiredVersion;
 }
 async function getDiffInstalledVersion(githubHostedInstalledVersion) {
-  const requiredVersion = githubHostedInstalledVersion.map(
-    (v) => v.version.number
+  if (!githubHostedInstalledVersion.versions || !Array.isArray(githubHostedInstalledVersion.versions)) {
+    throw new Error("No versions found in GitHub hosted installed versions");
+  }
+  const requiredVersion = githubHostedInstalledVersion.versions.map(
+    (v) => v.link
   );
   requiredVersion.sort();
   (0, import_core.debug)(`Required version: ${requiredVersion.join(", ")}`);
   const installed = await getInstalledXcodeVersions();
   if (installed === void 0) {
-    throw new Error("Installed Xcode is not found");
+    throw new Error("Cannot get installed Xcode versions");
   }
   installed.sort();
   (0, import_core.debug)(`Installed version: ${installed.join(", ")}`);
   const diff = requiredVersion.filter((v) => !installed.includes(v));
-  (0, import_core.debug)(`Diff: ${diff.join(", ")}`);
+  (0, import_core.debug)(
+    `requiredVersion.filter((v) => !installed.includes(v)): ${diff.join(", ")}`
+  );
   return diff;
 }
 main().catch((e) => {

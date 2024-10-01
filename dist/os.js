@@ -5130,6 +5130,7 @@ var require_dist2 = __commonJS({
 // npm/src/os.ts
 var os_exports = {};
 __export(os_exports, {
+  ConvertArchitectures: () => ConvertArchitectures,
   getInstalledXcodeVersions: () => getInstalledXcodeVersions,
   getMacOSVersion: () => getMacOSVersion,
   getSymbolicXcodeVersion: () => getSymbolicXcodeVersion
@@ -6456,8 +6457,27 @@ async function getMacOSVersion() {
     throw new Error(`Failed to get macOS version: ${error}`);
   }
 }
+function ConvertArchitectures(architecture) {
+  switch (architecture) {
+    case "x86_64": {
+      return "x64";
+    }
+    case "x64": {
+      return "x64";
+    }
+    case "aarch64": {
+      return "arm64";
+    }
+    case "arm64": {
+      return "arm64";
+    }
+    default:
+      throw new Error(`Invalid architecture: ${architecture}`);
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  ConvertArchitectures,
   getInstalledXcodeVersions,
   getMacOSVersion,
   getSymbolicXcodeVersion
