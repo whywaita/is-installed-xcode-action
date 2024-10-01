@@ -25530,14 +25530,14 @@ var main = async () => {
   );
   if (isInstalledDefaultVersion === false) {
     const symbolicVersion = await getSymbolicXcodeVersion();
-    (0, import_core.warning)("Installed Xcode is not newest version");
+    (0, import_core.warning)("Installed Xcode is not the default version");
     (0, import_core.warning)(`Installed Xcode: ${symbolicVersion}`);
     (0, import_core.warning)(`Default Xcode: ${githubHostedInstalledVersion.defaultVersion}`);
     if (isSuccessOnMiss) {
       (0, import_core.info)("Success on miss is enabled, so this action is success");
       return;
     }
-    (0, import_core.setFailed)("Installed Xcode is not newest version");
+    (0, import_core.setFailed)("Installed Xcode is not the default version");
     return;
   }
   const diff = await getDiffInstalledVersion(
@@ -25580,7 +25580,7 @@ async function getDiffInstalledVersion(githubHostedInstalledVersion) {
   (0, import_core.debug)(`Required version: ${requiredVersion.join(", ")}`);
   const installed = await getInstalledXcodeVersions();
   if (installed === void 0) {
-    throw new Error("Connot get installed Xcode versions");
+    throw new Error("Cannot get installed Xcode versions");
   }
   installed.sort();
   (0, import_core.debug)(`Installed version: ${installed.join(", ")}`);
