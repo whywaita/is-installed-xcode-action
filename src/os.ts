@@ -55,10 +55,18 @@ export async function getMacOSVersion(): Promise<string> {
 
 export function ConvertArchitectures(architecture: string): "x64" | "arm64" {
   switch (architecture) {
-    case "x86_64":
+    case "x86_64": {
       return "x64";
-    case "arm64":
+    }
+    case "x64": {
+      return "x64";
+    }
+    case "aarch64": {
       return "arm64";
+    }
+    case "arm64": {
+      return "arm64";
+    }
     default:
       throw new Error(`Invalid architecture: ${architecture}`);
   }
