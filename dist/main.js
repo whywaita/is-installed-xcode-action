@@ -24198,95 +24198,27 @@ function createMergeProxy(baseObj, extObj) {
 var import_core = __toESM(require_core());
 var import_util4 = require("util");
 
-// npm/node_modules/xcodereleases-deno-sdk/esm/gha.js
-function GetXcodeVersionsInGitHubHosted(xr, macOSVersion) {
-  let result = [];
-  const releasesVersions = GetXcodeReleasesByRelease(xr, "release");
-  const compatibleReleaseVersions = GetXcodeReleasesCompatibleVersion(releasesVersions, macOSVersion);
-  const releasesByVersion = DivideXcodeReleasesByVersion(compatibleReleaseVersions);
-  for (const [_, releases] of releasesByVersion) {
-    const minorVersion = releases.filter((release) => !IsPatchVersion(release));
-    result = result.concat(minorVersion);
-    const patchReleases = releases.filter((release) => IsPatchVersion(release) && !IsDeprecatedVersionInGHA(release));
-    result = result.concat(patchReleases);
+// npm/src/xcode.ts
+async function GetXcodeVersionsInGitHubHosted(macOSVersion, architecture) {
+  if (!isValidArchitecture(architecture)) {
+    throw new Error(`Invalid architecture: ${architecture}`);
   }
-  const betaVersions = GetXcodeReleasesByRelease(xr, "beta");
-  result = result.concat(betaVersions[betaVersions.length - 1]);
-  result.sort((a, b) => b._versionOrder - a._versionOrder);
-  result = result.filter((value, index, self) => {
-    return self.indexOf(value) === index;
+  const majorVersion = getMacOSMajorVersion(macOSVersion);
+  const toolsetJson = await fetch(
+    `https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/macos/toolsets/toolset-${majorVersion}.json`
+  ).catch((error2) => {
+    throw new Error(`Failed to fetch toolset json: ${error2}`);
   });
-  return result;
+  const toolset = await toolsetJson.json();
+  const defaultVersion = toolset.xcode.default;
+  const versions = toolset.xcode[architecture].versions;
+  return { defaultVersion, versions };
 }
-function IsDeprecatedVersionInGHA(release) {
-  const date = /* @__PURE__ */ new Date();
-  date.setMonth(date.getMonth() - 3);
-  const releaseDate = new Date(release.date.year, release.date.month - 1, release.date.day);
-  return releaseDate < date;
+function getMacOSMajorVersion(macOSVersion) {
+  return macOSVersion.split(".")[0];
 }
-
-// npm/node_modules/xcodereleases-deno-sdk/esm/mod.js
-var APIEndpoint = "https://xcodereleases.com/data.json";
-async function GetXcodeReleases() {
-  return await GetXcodeReleasesWithURL(APIEndpoint);
-}
-async function GetXcodeReleasesWithURL(url) {
-  const response = await fetch(url);
-  const releases = await response.json();
-  return releases.sort((a, b) => a._versionOrder - b._versionOrder);
-}
-function GetXcodeReleasesByRelease(releases, releaseType) {
-  switch (releaseType) {
-    case "release":
-      return releases.filter((release) => release.version.release.release);
-    case "beta":
-      return releases.filter((release) => release.version.release.beta !== void 0);
-    case "rc":
-      return releases.filter((release) => release.version.release.rc !== void 0);
-    case "gm":
-      return releases.filter((release) => release.version.release.gm);
-    case "gmSeed":
-      return releases.filter((release) => release.version.release.gmSeed !== void 0);
-    case "dp":
-      return releases.filter((release) => release.version.release.dp !== void 0);
-  }
-}
-function GetXcodeReleasesCompatibleVersion(releases, macOSVersion) {
-  const [major, minor] = macOSVersion.split(".");
-  const majorVersion = parseInt(major);
-  const minorVersion = parseInt(minor);
-  return releases.filter((release) => {
-    const [requiredMajor, requiredMinor] = release.requires.split(".");
-    const requiredMajorVersion = parseInt(requiredMajor);
-    const requiredMinorVersion = parseInt(requiredMinor);
-    return majorVersion < requiredMajorVersion || majorVersion === requiredMajorVersion && minorVersion <= requiredMinorVersion;
-  });
-}
-function DivideXcodeReleasesByVersion(releases) {
-  const map = /* @__PURE__ */ new Map();
-  releases.forEach((release) => {
-    const minorVersion = release.version.number.split(".")[1];
-    if (!map.has(minorVersion)) {
-      map.set(minorVersion, []);
-    }
-    map.get(minorVersion)?.push(release);
-  });
-  return map;
-}
-function IsPatchVersion(release) {
-  return release.version.number.split(".").length > 2;
-}
-
-// npm/src/xcodereleases.ts
-function getXcodeNewestRelease(xr) {
-  const releasesVersions = GetXcodeReleasesByRelease(
-    xr,
-    "release"
-  );
-  if (releasesVersions.length === 0) {
-    throw new Error("No Xcode releases found.");
-  }
-  return releasesVersions[0];
+function isValidArchitecture(architecture) {
+  return ["x64", "arm64"].includes(architecture);
 }
 
 // npm/src/deps/deno.land/std@0.182.0/_util/os.ts
@@ -25548,6 +25480,16 @@ async function getMacOSVersion() {
     throw new Error(`Failed to get macOS version: ${error2}`);
   }
 }
+function ConvertArchitectures(architecture) {
+  switch (architecture) {
+    case "x86_64":
+      return "x64";
+    case "arm64":
+      return "arm64";
+    default:
+      throw new Error(`Invalid architecture: ${architecture}`);
+  }
+}
 
 // npm/src/main.ts
 var isSuccessOnMiss = (0, import_core.getInput)("success-on-miss") === "true";
@@ -25557,29 +25499,25 @@ var main = async () => {
     (0, import_core.setFailed)("This action is only supported on macOS");
     return;
   }
+  const rawArch = import_shim_deno2.Deno.build.arch;
+  const arch = ConvertArchitectures(rawArch);
   (0, import_core.debug)(`success-on-miss: ${isSuccessOnMiss}`);
   const version2 = await getMacOSVersion();
   (0, import_core.debug)(`macOS version: ${version2}`);
-  const xr = await GetXcodeReleases();
-  const githubHostedInstalledVersion = GetXcodeVersionsInGitHubHosted(
-    xr,
-    version2
-  );
+  (0, import_core.debug)(`architecture: ${arch}`);
+  const githubHostedInstalledVersion = await GetXcodeVersionsInGitHubHosted(version2, arch);
   (0, import_core.debug)(
     `GitHub hosted installed version: ${(0, import_util4.inspect)(githubHostedInstalledVersion)}`
   );
-  const newestVersion = getXcodeNewestRelease(
-    githubHostedInstalledVersion
+  (0, import_core.debug)(`Default version: ${githubHostedInstalledVersion.defaultVersion}`);
+  const isInstalledDefaultVersion = await isApplicationXcodeIsDefaultVersion(
+    githubHostedInstalledVersion.defaultVersion
   );
-  (0, import_core.debug)(`Newest version: ${newestVersion}`);
-  const isInstalledNewestVersion = await isApplicationXcodeIsNewestVersion(
-    newestVersion
-  );
-  if (isInstalledNewestVersion === false) {
+  if (isInstalledDefaultVersion === false) {
     const symbolicVersion = await getSymbolicXcodeVersion();
     (0, import_core.warning)("Installed Xcode is not newest version");
     (0, import_core.warning)(`Installed Xcode: ${symbolicVersion}`);
-    (0, import_core.warning)(`Newest Xcode: ${newestVersion.version.number}`);
+    (0, import_core.warning)(`Default Xcode: ${githubHostedInstalledVersion.defaultVersion}`);
     if (isSuccessOnMiss) {
       (0, import_core.info)("Success on miss is enabled, so this action is success");
       return;
@@ -25598,26 +25536,25 @@ var main = async () => {
     }
     (0, import_core.warning)(`Installed Xcode: ${installed.join(", ")}`);
     (0, import_core.warning)(
-      `Required Xcode: ${githubHostedInstalledVersion.map((v) => v.version.number).join(", ")}`
+      `Required Xcode: ${githubHostedInstalledVersion.versions.map((v) => v.link).join(", ")}`
     );
     (0, import_core.warning)(`Diff: ${diff.join(", ")}`);
     throw new Error(
-      `Installed Xcode is not the required version. Installed: ${installed.join(", ")}, Required: ${githubHostedInstalledVersion.map((v) => v.version.number).join(", ")}`
+      `Installed Xcode is not the required version. Installed: ${installed.join(", ")}, Required: ${githubHostedInstalledVersion.versions.map((v) => v.link).join(", ")}`
     );
   }
   (0, import_core.debug)("Installed Xcode is newest version and required version");
   return;
 };
-async function isApplicationXcodeIsNewestVersion(requiredNewestVersion) {
+async function isApplicationXcodeIsDefaultVersion(requiredDefaultVersion) {
   const symbolicVersion = await getSymbolicXcodeVersion();
   (0, import_core.debug)(`Symbolic link version: ${symbolicVersion}`);
-  (0, import_core.debug)(`Required newest: ${requiredNewestVersion}`);
-  (0, import_core.debug)(`Required newest version: ${requiredNewestVersion.version.number}`);
-  return symbolicVersion === requiredNewestVersion.version.number;
+  (0, import_core.debug)(`Required default version: ${requiredDefaultVersion}`);
+  return symbolicVersion === requiredDefaultVersion;
 }
 async function getDiffInstalledVersion(githubHostedInstalledVersion) {
-  const requiredVersion = githubHostedInstalledVersion.map(
-    (v) => v.version.number
+  const requiredVersion = githubHostedInstalledVersion.versions.map(
+    (v) => v.link
   );
   requiredVersion.sort();
   (0, import_core.debug)(`Required version: ${requiredVersion.join(", ")}`);

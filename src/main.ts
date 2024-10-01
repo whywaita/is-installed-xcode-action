@@ -7,17 +7,16 @@ import {
   warning,
 } from "npm:@actions/core@1.10.1";
 import { inspect } from "node:util";
-import { getXcodeNewestRelease } from "./xcodereleases.ts";
 import {
+  GetXcodeVersionsInGitHubHosted,
+  XcodeVersionsInGitHubHosted,
+} from "./xcode.ts";
+import {
+  ConvertArchitectures,
   getInstalledXcodeVersions,
   getMacOSVersion,
   getSymbolicXcodeVersion,
 } from "./os.ts";
-import {
-  GetXcodeReleases,
-  GetXcodeVersionsInGitHubHosted,
-  type XcodeRelease,
-} from "npm:xcodereleases-deno-sdk@0.2.1";
 
 const isSuccessOnMiss: boolean = getInput("success-on-miss") === "true";
 
@@ -27,36 +26,33 @@ const main = async () => {
     setFailed("This action is only supported on macOS");
     return;
   }
+  const rawArch: string = Deno.build.arch;
+  const arch = ConvertArchitectures(rawArch);
 
   debug(`success-on-miss: ${isSuccessOnMiss}`);
 
   const version: string = await getMacOSVersion();
   debug(`macOS version: ${version}`);
-  const xr: XcodeRelease[] = await GetXcodeReleases();
-  const githubHostedInstalledVersion: XcodeRelease[] =
-    GetXcodeVersionsInGitHubHosted(
-      xr,
-      version,
-    );
+  debug(`architecture: ${arch}`);
+
+  const githubHostedInstalledVersion: XcodeVersionsInGitHubHosted =
+    await GetXcodeVersionsInGitHubHosted(version, arch);
   debug(
     `GitHub hosted installed version: ${inspect(githubHostedInstalledVersion)}`,
   );
 
-  // 1. Check installed Xcode is newest version
-  // And "/Applications/Xcode.app" is symbolic link to newest version
-  const newestVersion: XcodeRelease = getXcodeNewestRelease(
-    githubHostedInstalledVersion,
-  );
-  debug(`Newest version: ${newestVersion}`);
-  const isInstalledNewestVersion: boolean =
-    await isApplicationXcodeIsNewestVersion(
-      newestVersion,
+  // 1. Check installed Xcode is default version
+  // And "/Applications/Xcode.app" is symbolic link to default version
+  debug(`Default version: ${githubHostedInstalledVersion.defaultVersion}`);
+  const isInstalledDefaultVersion: boolean =
+    await isApplicationXcodeIsDefaultVersion(
+      githubHostedInstalledVersion.defaultVersion,
     );
-  if (isInstalledNewestVersion === false) {
+  if (isInstalledDefaultVersion === false) {
     const symbolicVersion: string = await getSymbolicXcodeVersion();
     warning("Installed Xcode is not newest version");
     warning(`Installed Xcode: ${symbolicVersion}`);
-    warning(`Newest Xcode: ${newestVersion.version.number}`);
+    warning(`Default Xcode: ${githubHostedInstalledVersion.defaultVersion}`);
     if (isSuccessOnMiss) {
       info("Success on miss is enabled, so this action is success");
       return;
@@ -78,7 +74,7 @@ const main = async () => {
     warning(`Installed Xcode: ${installed.join(", ")}`);
     warning(
       `Required Xcode: ${
-        githubHostedInstalledVersion.map((v) => v.version.number).join(", ")
+        githubHostedInstalledVersion.versions.map((v) => v.link).join(", ")
       }`,
     );
     warning(`Diff: ${diff.join(", ")}`);
@@ -86,7 +82,7 @@ const main = async () => {
       `Installed Xcode is not the required version. Installed: ${
         installed.join(", ")
       }, Required: ${
-        githubHostedInstalledVersion.map((v) => v.version.number).join(", ")
+        githubHostedInstalledVersion.versions.map((v) => v.link).join(", ")
       }`,
     );
   }
@@ -95,23 +91,22 @@ const main = async () => {
   return;
 };
 
-async function isApplicationXcodeIsNewestVersion(
-  requiredNewestVersion: XcodeRelease,
+async function isApplicationXcodeIsDefaultVersion(
+  requiredDefaultVersion: string,
 ): Promise<boolean> {
   const symbolicVersion: string = await getSymbolicXcodeVersion();
 
   debug(`Symbolic link version: ${symbolicVersion}`);
-  debug(`Required newest: ${requiredNewestVersion}`);
-  debug(`Required newest version: ${requiredNewestVersion.version.number}`);
+  debug(`Required default version: ${requiredDefaultVersion}`);
 
-  return symbolicVersion === requiredNewestVersion.version.number;
+  return symbolicVersion === requiredDefaultVersion;
 }
 
 async function getDiffInstalledVersion(
-  githubHostedInstalledVersion: XcodeRelease[],
+  githubHostedInstalledVersion: XcodeVersionsInGitHubHosted,
 ): Promise<string[]> {
-  const requiredVersion: string[] = githubHostedInstalledVersion.map(
-    (v) => v.version.number,
+  const requiredVersion: string[] = githubHostedInstalledVersion.versions.map(
+    (v) => v.link,
   );
   requiredVersion.sort();
 
