@@ -23,25 +23,31 @@ __export(xcode_exports, {
 });
 module.exports = __toCommonJS(xcode_exports);
 async function GetXcodeVersionsInGitHubHosted(macOSVersion, architecture) {
-  if (!isValidArchitecture(architecture)) {
-    throw new Error(`Invalid architecture: ${architecture}`);
-  }
   const majorVersion = getMacOSMajorVersion(macOSVersion);
-  const toolsetJson = await fetch(
-    `https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/macos/toolsets/toolset-${majorVersion}.json`
-  ).catch((error) => {
-    throw new Error(`Failed to fetch toolset json: ${error}`);
-  });
-  const toolset = await toolsetJson.json();
+  let toolset;
+  try {
+    const response = await fetch(
+      `https://raw.githubusercontent.com/actions/runner-images/main/images/macos/toolsets/toolset-${majorVersion}.json`
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch toolset JSON: ${response.status} ${response.statusText}`
+      );
+    }
+    toolset = await response.json();
+  } catch (error) {
+    throw new Error(`Failed to fetch toolset JSON: ${error}`);
+  }
   const defaultVersion = toolset.xcode.default;
-  const versions = toolset.xcode[architecture].versions;
+  const archData = toolset.xcode[architecture];
+  if (!archData) {
+    throw new Error(`No data available for architecture: ${architecture}`);
+  }
+  const versions = archData.versions;
   return { defaultVersion, versions };
 }
 function getMacOSMajorVersion(macOSVersion) {
   return macOSVersion.split(".")[0];
-}
-function isValidArchitecture(architecture) {
-  return ["x64", "arm64"].includes(architecture);
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

@@ -34,27 +34,31 @@ export async function GetXcodeVersionsInGitHubHosted(
   macOSVersion: string,
   architecture: "x64" | "arm64",
 ): Promise<XcodeVersionsInGitHubHosted> {
-  if (!isValidArchitecture(architecture)) {
-    throw new Error(`Invalid architecture: ${architecture}`);
+  const majorVersion = getMacOSMajorVersion(macOSVersion);
+  let toolset: Root;
+  try {
+    const response = await fetch(
+      `https://raw.githubusercontent.com/actions/runner-images/main/images/macos/toolsets/toolset-${majorVersion}.json`,
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch toolset JSON: ${response.status} ${response.statusText}`,
+      );
+    }
+    toolset = (await response.json()) as Root;
+  } catch (error) {
+    throw new Error(`Failed to fetch toolset JSON: ${error}`);
   }
 
-  const majorVersion = getMacOSMajorVersion(macOSVersion);
-  const toolsetJson = await fetch(
-    `https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/macos/toolsets/toolset-${majorVersion}.json`,
-  ).catch((error) => {
-    throw new Error(`Failed to fetch toolset json: ${error}`);
-  });
-  const toolset = await toolsetJson.json() as Root;
-
   const defaultVersion = toolset.xcode.default;
-  const versions = toolset.xcode[architecture].versions;
+  const archData = toolset.xcode[architecture];
+  if (!archData) {
+    throw new Error(`No data available for architecture: ${architecture}`);
+  }
+  const versions = archData.versions;
   return { defaultVersion, versions };
 }
 
 function getMacOSMajorVersion(macOSVersion: string) {
   return macOSVersion.split(".")[0];
-}
-
-function isValidArchitecture(architecture: string) {
-  return ["x64", "arm64"].includes(architecture);
 }

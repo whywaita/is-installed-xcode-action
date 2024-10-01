@@ -24201,25 +24201,31 @@ var import_process = __toESM(require("process"));
 
 // npm/src/xcode.ts
 async function GetXcodeVersionsInGitHubHosted(macOSVersion, architecture) {
-  if (!isValidArchitecture(architecture)) {
-    throw new Error(`Invalid architecture: ${architecture}`);
-  }
   const majorVersion = getMacOSMajorVersion(macOSVersion);
-  const toolsetJson = await fetch(
-    `https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/macos/toolsets/toolset-${majorVersion}.json`
-  ).catch((error2) => {
-    throw new Error(`Failed to fetch toolset json: ${error2}`);
-  });
-  const toolset = await toolsetJson.json();
+  let toolset;
+  try {
+    const response = await fetch(
+      `https://raw.githubusercontent.com/actions/runner-images/main/images/macos/toolsets/toolset-${majorVersion}.json`
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch toolset JSON: ${response.status} ${response.statusText}`
+      );
+    }
+    toolset = await response.json();
+  } catch (error2) {
+    throw new Error(`Failed to fetch toolset JSON: ${error2}`);
+  }
   const defaultVersion = toolset.xcode.default;
-  const versions = toolset.xcode[architecture].versions;
+  const archData = toolset.xcode[architecture];
+  if (!archData) {
+    throw new Error(`No data available for architecture: ${architecture}`);
+  }
+  const versions = archData.versions;
   return { defaultVersion, versions };
 }
 function getMacOSMajorVersion(macOSVersion) {
   return macOSVersion.split(".")[0];
-}
-function isValidArchitecture(architecture) {
-  return ["x64", "arm64"].includes(architecture);
 }
 
 // npm/src/deps/deno.land/std@0.182.0/_util/os.ts
@@ -25557,11 +25563,16 @@ var main = async () => {
 };
 async function isApplicationXcodeIsDefaultVersion(requiredDefaultVersion) {
   const symbolicVersion = await getSymbolicXcodeVersion();
-  (0, import_core.debug)(`Symbolic link version: ${symbolicVersion}`);
-  (0, import_core.debug)(`Required default version: ${requiredDefaultVersion}`);
-  return symbolicVersion === requiredDefaultVersion;
+  const normalizedSymbolicVersion = symbolicVersion.trim();
+  const normalizedRequiredVersion = requiredDefaultVersion.trim();
+  (0, import_core.debug)(`Symbolic link version: ${normalizedSymbolicVersion}`);
+  (0, import_core.debug)(`Required default version: ${normalizedRequiredVersion}`);
+  return normalizedSymbolicVersion === normalizedRequiredVersion;
 }
 async function getDiffInstalledVersion(githubHostedInstalledVersion) {
+  if (!githubHostedInstalledVersion.versions || !Array.isArray(githubHostedInstalledVersion.versions)) {
+    throw new Error("No versions found in GitHub hosted installed versions");
+  }
   const requiredVersion = githubHostedInstalledVersion.versions.map(
     (v) => v.link
   );

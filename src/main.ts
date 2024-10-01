@@ -96,16 +96,24 @@ async function isApplicationXcodeIsDefaultVersion(
   requiredDefaultVersion: string,
 ): Promise<boolean> {
   const symbolicVersion: string = await getSymbolicXcodeVersion();
+  const normalizedSymbolicVersion = symbolicVersion.trim();
+  const normalizedRequiredVersion = requiredDefaultVersion.trim();
 
-  debug(`Symbolic link version: ${symbolicVersion}`);
-  debug(`Required default version: ${requiredDefaultVersion}`);
+  debug(`Symbolic link version: ${normalizedSymbolicVersion}`);
+  debug(`Required default version: ${normalizedRequiredVersion}`);
 
-  return symbolicVersion === requiredDefaultVersion;
+  return normalizedSymbolicVersion === normalizedRequiredVersion;
 }
 
 async function getDiffInstalledVersion(
   githubHostedInstalledVersion: XcodeVersionsInGitHubHosted,
 ): Promise<string[]> {
+  if (
+    !githubHostedInstalledVersion.versions ||
+    !Array.isArray(githubHostedInstalledVersion.versions)
+  ) {
+    throw new Error("No versions found in GitHub hosted installed versions");
+  }
   const requiredVersion: string[] = githubHostedInstalledVersion.versions.map(
     (v) => v.link,
   );
