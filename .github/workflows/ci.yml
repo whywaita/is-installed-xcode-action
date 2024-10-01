@@ -31,7 +31,15 @@ jobs:
             exit 1
           fi
   test:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os:
+          - macos-latest
+          - macos-12
+          - macos-13
+          - macos-14
+          - macos-15
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup-deno-with-cache
