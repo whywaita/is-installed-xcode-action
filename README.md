@@ -7,7 +7,7 @@ cycloud-io/action-is-installed-xcode checks to see if the same Xcode version as 
 ## Usage
 
 ```yaml
-- uses: cycloud-io/action-is-installed-xcode@v1
+- uses: cycloud-io/action-is-installed-xcode@v0
   with:
     success-on-miss: false  # Optional
 ```
