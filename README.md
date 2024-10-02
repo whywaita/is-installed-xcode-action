@@ -1,18 +1,18 @@
-# whywaita/is-installed-xcode-action
+# cycloud-io/action-is-installed-xcode
 
-[![CI](https://github.com/whywaita/is-installed-xcode-action/actions/workflows/ci.yml/badge.svg)](https://github.com/whywaita/is-installed-xcode-action/actions/workflows/ci.yml)
+[![CI](https://github.com/cycloud-io/action-is-installed-xcode/actions/workflows/ci.yml/badge.svg)](https://github.com/cycloud-io/action-is-installed-xcode/actions/workflows/ci.yml)
 
-whywaita/is-installed-xcode-action checks to see if the same Xcode version as GitHub-hosted is installed.
+cycloud-io/action-is-installed-xcode checks to see if the same Xcode version as GitHub-hosted is installed.
 
 ## Usage
 
 ```yaml
-- uses: whywaita/is-installed-xcode-version@v1
+- uses: cycloud-io/action-is-installed-xcode@v1
   with:
     success-on-miss: false  # Optional
 ```
 
-Please see [actions.yml](https://github.com/whywaita/is-installed-xcode-version/blob/main/action.yml) about input parameters.
+Please see [actions.yml](https://github.com/cycloud-io/action-is-installed-xcode/blob/main/action.yml) about input parameters.
 
 ## Motivation
 

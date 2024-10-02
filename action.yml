@@ -1,4 +1,4 @@
-name: 'whywaita/is-installed-xcode-action'
+name: 'cycloud-io/action-is-installed-xcode'
 description: 'Checks to see if the same Xcode version as GitHub-hosted is installed'
 author: 'whywaita'
 
