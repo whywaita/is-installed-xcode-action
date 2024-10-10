@@ -19050,31 +19050,44 @@ function getInputGHA() {
     CheckInstalledVersions: false
   };
   const inputCheck = (0, import_core.getInput)("check-target");
+  let no_check = true;
   if (inputCheck === "all") {
     input.CheckDefaultVersion = true;
     input.CheckInstalledVersions = true;
-    (0, import_core.debug)(`input: ${JSON.stringify(input)}`);
-    return input;
-  }
-  const checks = inputCheck.split(",");
-  let no_check = true;
-  for (const check of checks) {
-    switch (check) {
-      case "default-version":
-        input.CheckDefaultVersion = true;
-        no_check = false;
-        break;
-      case "installed-versions":
-        input.CheckInstalledVersions = true;
-        no_check = false;
-        break;
-      default:
-        (0, import_core.warning)(`Unknown check target: ${check}`);
-        break;
+    no_check = false;
+  } else {
+    const checks = inputCheck.split(",");
+    for (const check of checks) {
+      switch (check) {
+        case "default-version":
+          input.CheckDefaultVersion = true;
+          no_check = false;
+          break;
+        case "installed-versions":
+          input.CheckInstalledVersions = true;
+          no_check = false;
+          break;
+        default:
+          (0, import_core.warning)(`Unknown check target: ${check}`);
+          break;
+      }
     }
   }
   if (no_check) {
     throw new Error("No check target is specified");
+  }
+  const inputOverrideDefaultVersion = (0, import_core.getInput)(
+    "override-default-version"
+  );
+  if (inputOverrideDefaultVersion !== "") {
+    input.OverrideXcodeVersion = inputOverrideDefaultVersion;
+    if (!input.CheckDefaultVersion) {
+      (0, import_core.warning)(
+        "Override default version is specified, but check default version is disabled"
+      );
+    }
+  } else {
+    input.OverrideXcodeVersion = void 0;
   }
   (0, import_core.debug)(`input: ${JSON.stringify(input)}`);
   return input;

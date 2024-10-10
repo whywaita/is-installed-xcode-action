@@ -25486,9 +25486,7 @@ async function getDiffInstalledVersion(githubHostedInstalledVersion) {
   }
   installed.sort();
   (0, import_core2.debug)(`Installed version: ${installed.join(", ")}`);
-  const diff = requiredVersion.filter(
-    (v) => !installed.includes(v)
-  );
+  const diff = requiredVersion.filter((v) => !installed.includes(v));
   (0, import_core2.debug)(
     `requiredVersion.filter((v) => !installed.includes(v)): ${diff.join(", ")}`
   );

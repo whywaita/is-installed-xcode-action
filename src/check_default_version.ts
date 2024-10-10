@@ -1,4 +1,4 @@
-import { debug, info, setFailed, warning } from "npm:@actions/core@1.10.1";
+import { debug, warning } from "npm:@actions/core@1.10.1";
 import { XcodeVersionsInGitHubHosted } from "./xcode.ts";
 import { Input } from "./input.ts";
 import { getSymbolicXcodeVersion } from "./os.ts";
@@ -9,24 +9,24 @@ export async function CheckDefaultVersion(
 ): Promise<void> {
     // 1. Check installed Xcode is default version
     // And "/Applications/Xcode.app" is symbolic link to default version
-    debug(`Default version: ${githubInstalled.defaultVersion}`);
+    const defaultVersion: string = input.OverrideXcodeVersion ||
+        githubInstalled.defaultVersion;
+
+    debug(`Default version: ${defaultVersion}`);
     const isInstalledDefaultVersion: boolean =
         await isApplicationXcodeIsDefaultVersion(
-            githubInstalled.defaultVersion,
+            defaultVersion,
         );
     if (isInstalledDefaultVersion === false) {
         const symbolicVersion: string = await getSymbolicXcodeVersion();
         warning("Installed Xcode is not the default version");
         warning(`Installed Xcode: ${symbolicVersion}`);
         warning(
-            `Default Xcode: ${githubInstalled.defaultVersion}`,
+            `Default Xcode: ${defaultVersion}`,
         );
-        if (input.SuccessOnMissing) {
-            info("Success on miss is enabled, so this action is success");
-            return;
-        }
-        setFailed("Installed Xcode is not the default version");
-        return;
+        throw new Error(
+            `Installed Xcode is not the default version. Installed: ${symbolicVersion}, Default: ${defaultVersion}`,
+        );
     }
     return;
 }

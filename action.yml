@@ -12,8 +12,11 @@ inputs:
     required: false
     default: false
   check-target:
-    description: 'The target to check. comma separated (all, default-version, installed-versions)'
+    description: 'The target to check. comma separated (e.g. all, default-version, installed-versions)'
     default: 'all'
+  override-default-version:
+    description: 'Override the default version of Xcode (e.g. 16.0)'
+    required: false
 
 runs:
   using: node20
