@@ -11,6 +11,9 @@ inputs:
     description: 'If the Xcode version is not installed, the action will be successful'
     required: false
     default: false
+  check-target:
+    description: 'The target to check. comma separated (all, default-version, installed-versions)'
+    default: 'all'
 
 runs:
   using: node20

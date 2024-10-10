@@ -1,5 +1,7 @@
+import { debug } from "npm:@actions/core@1.10.1";
 import { basename } from "https://deno.land/std@0.182.0/path/mod.ts";
 import { exec } from "node:child_process";
+import process from "node:process";
 import { promisify } from "node:util";
 
 export async function getInstalledXcodeVersions(): Promise<
@@ -35,6 +37,30 @@ export async function getSymbolicXcodeVersion(): Promise<string> {
 
   const p = await Deno.realPath("/Applications/Xcode.app");
   return getXcodeVersionFromPath(basename(p));
+}
+
+export type Platform = {
+  version: string;
+  arch: "x64" | "arm64";
+};
+
+// Get Platform
+export async function getPlatform(): Promise<Platform> {
+  const platform: string = Deno.build.os;
+  if (platform !== "darwin") {
+    throw new Error(`This action is only supported on macOS: ${platform}`);
+  }
+  const rawArch: string = process.arch;
+  const arch = ConvertArchitectures(rawArch);
+
+  const version: string = await getMacOSVersion();
+  debug(`macOS version: ${version}`);
+  debug(`architecture: ${arch}`);
+
+  return {
+    version: version,
+    arch: arch,
+  };
 }
 
 const execAsync = promisify(exec);
