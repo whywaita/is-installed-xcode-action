@@ -7,7 +7,14 @@ console.debug("Start dnt ...");
 const outDir = "./npm";
 await emptyDir(outDir);
 await build({
-  entryPoints: ["./src/main.ts", "./src/os.ts", "./src/xcode.ts"],
+  entryPoints: [
+    "./src/main.ts",
+    "./src/os.ts",
+    "./src/xcode.ts",
+    "./src/input.ts",
+    "./src/check_default_version.ts",
+    "./src/check_installed_version.ts",
+  ],
   outDir,
   typeCheck: false,
   test: false,
@@ -33,6 +40,9 @@ await esbuild.build({
     "./npm/src/main.ts",
     "./npm/src/os.ts",
     "./npm/src/xcode.ts",
+    "./npm/src/input.ts",
+    "./npm/src/check_default_version.ts",
+    "./npm/src/check_installed_version.ts",
   ],
   outdir: distDir,
   bundle: true,

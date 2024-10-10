@@ -19,3 +19,12 @@ Please see [actions.yml](https://github.com/cycloud-io/action-is-installed-xcode
 The GitHub-hosted runner installs Xcode under the conditions specified in [actions/runner-images](https://github.com/actions/runner-images/blob/59a0b3727b675f4d29713127bca7726492d7a085/README.md#L121).
 
 This action checks whether the self-hosted runner is in the same state as the GitHub-hosted runner when providing the macOS runner.
+
+## Development
+
+### Build
+
+```bash
+deno fmt
+deno task bundle
+```
